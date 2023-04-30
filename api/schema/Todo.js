@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const TasksSchema = new Schema({
+const TodoSchema = new Schema({
   title: String, // String is shorthand for {type: String}
   author: String,
   status: {
@@ -9,7 +9,11 @@ const TasksSchema = new Schema({
     enum: ["stable", "progress", "finished"],
   },
   deadLine: {
-    type: Date,
+    type: String,
+  },
+  priority: {
+    type: String,
+    enum: ["urgent", "important", "normal"],
   },
   created_at: {
     type: Date,
@@ -17,4 +21,4 @@ const TasksSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("tasks", TasksSchema, "tasks");
+module.exports = mongoose.model("todo", TodoSchema, "todo");

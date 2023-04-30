@@ -1,45 +1,150 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import * as api from "../../../utils/routes/api.routes";
+import axios from "axios";
 
 const INITIAL_STATE = {
   value: 0,
+  todos: {
+    all: [
+      // {
+      //   _id: 1,
+      //   status: "stable",
+      //   title: "Faire les courses",
+      //   priority: "stable",
+      //   deadLine: "12/12/2021",
+      // },
+    ],
+    stable: [],
+    progress: [],
+    finished: [],
+    archive: [],
+  },
+  isLoading: false,
 };
 
-export const pokemonApi = createApi({
-  reducerPath: "pokemonApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "https://pokeapi.co/api/v2/" }),
-  endpoints: (builder) => ({
-    getPokemonByName: builder.query({
-      query: (name) => `pokemon/${name}`,
-    }),
-  }),
-});
+export const fetchAllTodos = createAsyncThunk(
+  "todo/fetchTodoByStatus",
+  async (status, thunkAPI) => {
+    try {
+      const { data } = await api.getAllTodo();
 
-export const { useGetPokemonByNameQuery } = pokemonApi;
+      return data;
+    } catch (error) {
+      console.log(JSON.stringify(error, null, 2));
+    }
+  }
+);
+
+export const deleteTodoSlice = createAsyncThunk(
+  "todo/deleteTodoById",
+  async (props, thunkAPI) => {
+    try {
+      // const data = await api.deleteTodoById(id);
+
+      await api.deleteTodoById(props._id);
+
+      return props;
+    } catch (error) {
+      console.log(JSON.stringify(error, null, 2));
+    }
+  }
+);
+
+export const changeTodoStatusSlice = createAsyncThunk(
+  "todo/changeTodoStatusSlice",
+  async (props, thunkAPI) => {
+    try {
+      // const data = await api.deleteTodoById(id);
+
+      const changeTodo = await api.changeStatus(props);
+
+      return props;
+    } catch (error) {
+      console.log(JSON.stringify(error, null, 2));
+    }
+  }
+);
 
 export const todoSlice = createSlice({
   name: "todo",
   initialState: INITIAL_STATE,
   reducers: {
-    increment: (state) => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
-      console.log("count");
+    getTodoByStatus: (state, action) => {
+      console.log(action.payload);
+      state.todos[action.payload.status] = state.todos.all.filter(
+        (todo) => todo.status === action.payload.status
+      );
+      console.log(state);
+    },
+  },
+  extraReducers: {
+    /**
+     * Fetch all messages from an event
+     */
 
-      state.value += 1;
+    [fetchAllTodos.pending]: (state) => {
+      console.log("pending");
+      state.isLoading = true;
     },
-    decrement: (state) => {
-      state.value -= 1;
+    [fetchAllTodos.fulfilled]: (state, { payload }) => {
+      // state.todos.all = [...payload.task];
+      payload.task.forEach((todo) => {
+        state.todos[todo.status] = [...state.todos[todo.status], todo];
+      });
+
+      state.isLoading = false;
+      console.log("fulfilled");
     },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
+    [fetchAllTodos.rejected]: (state, action) => {
+      console.log("rejected");
+      state.todos.all = [];
+      console.log(action);
+    },
+    /**
+     * Delete todo by id
+     */
+
+    [deleteTodoSlice.pending]: (state) => {
+      console.log("pending");
+    },
+    [deleteTodoSlice.fulfilled]: (state, { payload }) => {
+      state.todos[payload.currentStatus] = state.todos[
+        payload.currentStatus
+      ].filter((todo) => todo._id !== payload._id);
+      console.log("fulfilled");
+    },
+    [deleteTodoSlice.rejected]: (state, action) => {
+      console.log("rejected");
+      console.log(action);
+    },
+    /**
+     * Change todo status
+     */
+
+    [changeTodoStatusSlice.pending]: (state) => {
+      console.log("pending");
+    },
+    [changeTodoStatusSlice.fulfilled]: (state, { payload }) => {
+      state.todos[payload.newStatus] = [
+        ...state.todos[payload.newStatus],
+        state.todos[payload.currentStatus].find(
+          (todo) => todo._id === payload._id
+        ),
+      ];
+
+      state.todos[payload.currentStatus] = state.todos[
+        payload.currentStatus
+      ].filter((todo) => todo._id !== payload._id);
+
+      console.log("fulfilled");
+    },
+    [changeTodoStatusSlice.rejected]: (state, action) => {
+      console.log("rejected");
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { increment, decrement, incrementByAmount } = todoSlice.actions;
+export const { getTodoByStatus } = todoSlice.actions;
 
 export default todoSlice.reducer;

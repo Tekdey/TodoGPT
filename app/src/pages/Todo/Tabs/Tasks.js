@@ -1,38 +1,43 @@
 import { FlatList } from "react-native";
 import { StyleSheet, View, Text } from "react-native";
 import TodoCard from "../../../components/TodoCard";
+import { useEffect } from "react";
+import {
+  fetchAllTodos,
+  getTodoByStatus,
+} from "../../../redux/features/todo/TodoSlice";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 
 const Tasks = (props) => {
-  const { tabStatus, data } = props.route.params;
+  const { tabStatus, tabId } = props.route.params;
 
-  const DATA = [
-    {
-      key: "Devin",
-      title: "Devin",
-      status: "urgent",
-      deadLine: "06/07/2023",
-    },
-  ];
+  const dispatch = useDispatch();
 
-  console.log(data);
+  const { todos, isLoading } = useSelector((state) => state.todo);
+
+  useEffect(() => {
+    dispatch(getTodoByStatus({ status: tabStatus }));
+  }, []);
 
   return (
-    tabStatus === "stable" && (
-      <View style={styles.container}>
-        <View style={{ flex: 1, width: "100%" }}>
-          <FlatList
-            style={styles.flatList}
-            data={DATA}
-            renderItem={({ item }) => <TodoCard {...item} />}
-            keyExtractor={(item) => Date.now() * Math.random() * 983}
-            contentContainerStyle={{
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          />
-        </View>
+    <View style={styles.container}>
+      <View style={{ flex: 1, width: "100%" }}>
+        {/* <TodoCard {...DATA} tabId={tabId} /> */}
+        <FlatList
+          style={styles.flatList}
+          data={todos[tabStatus]}
+          renderItem={({ item }) => (
+            <TodoCard {...item} tabStatus={tabStatus} tabId={tabId} />
+          )}
+          keyExtractor={(item) => Date.now() * Math.random() * 983}
+          contentContainerStyle={{
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        />
       </View>
-    )
+    </View>
   );
 };
 

@@ -1,13 +1,10 @@
 const router = require("express").Router();
-// const error = require("../helper/error/handler");
+const controller = require("../controller/Todos");
 
-router.use(require("./get"));
-// router.use(require("./post"));
-// router.use(require("./put"));
-// router.use(require("./delete"));
-
-// router.use(error.notFound);
-
-// router.use(error.manager);
+router.get("/get/all/todo/:status", controller.getTodoByStatus);
+router.get("/get/all/todo", controller.getAllTodo);
+router.post("/create/todo", controller.createTodo);
+router.get("/delete/todo/:id", controller.deleteTodo);
+router.post("/update/todo/:id", controller.updateTodo);
 
 module.exports = router;

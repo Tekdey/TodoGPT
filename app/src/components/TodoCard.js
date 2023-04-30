@@ -10,33 +10,69 @@ import {
   Avatar,
   Badge,
 } from "react-native-ui-lib"; //eslint-disable-line
-import { StyleSheet } from "react-native";
-import { increment } from "../redux/features/todo/TodoSlice";
-import { useSelector, useDispatch } from "react-redux";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import {
+  changeTodoStatusSlice,
+  deleteTodoSlice,
+} from "../redux/features/todo/TodoSlice";
+import { useDispatch } from "react-redux";
 
-const TodoCard = ({ title, status, deadLine }) => {
-  const count = useSelector((state) => state.todo.value);
+const __statics = {
+  status: ["Tâches", "En cours", "Terminé", "Archiver"],
+  _status: ["stable", "progress", "finished", "archive"],
+};
+
+const TodoCard = ({ title, priority, deadLine, tabId, _id, tabStatus }) => {
   const dispatch = useDispatch();
+
+  const handleChangeStatus = (cardId, currentStatus, newStatus) => {
+    // card-id // new-status
+    console.log(cardId, currentStatus, newStatus);
+    // change card status
+    if (newStatus === "delete") {
+      console.log("delete");
+      dispatch(deleteTodoSlice({ _id: cardId, currentStatus, newStatus }));
+    } else {
+      console.log("change status");
+      dispatch(
+        changeTodoStatusSlice({ _id: cardId, currentStatus, newStatus })
+      );
+    }
+  };
 
   return (
     <Drawer
       style={styles.card_main_container}
       rightItems={[
         {
-          text: "Read",
-          background: Colors.blue30,
-          onPress: () => console.log("read pressed"),
+          text: !tabId ? "delete" : __statics.status[tabId - 1],
+          background: !tabId ? Colors.red30 : Colors.green30,
+          onPress: () =>
+            handleChangeStatus(
+              _id,
+              tabStatus,
+              !tabId ? "delete" : __statics._status[tabId - 1]
+            ),
         },
       ]}
       leftItem={{
-        text: "Delete",
-        background: Colors.red30,
-        onPress: () => console.log("delete pressed"),
+        text: __statics.status[tabId + 1],
+        background: Colors.blue30,
+        onPress: () =>
+          handleChangeStatus(_id, tabStatus, __statics._status[tabId + 1]),
       }}
       fullSwipeLeft={true}
       fullSwipeRight={true}
-      onWillFullSwipeLeft={() => console.log("full wipe")}
-      onWillFullSwipeRight={() => console.log("full wipe right")}
+      onWillFullSwipeLeft={() =>
+        handleChangeStatus(_id, tabStatus, __statics._status[tabId + 1])
+      }
+      onWillFullSwipeRight={() =>
+        handleChangeStatus(
+          _id,
+          tabStatus,
+          !tabId ? "delete" : __statics._status[tabId - 1]
+        )
+      }
     >
       <View style={styles.card_container}>
         <View style={styles.card_container_status}>
@@ -46,10 +82,30 @@ const TodoCard = ({ title, status, deadLine }) => {
               textTransform: "uppercase",
               fontWeight: "bold",
             }}
-            onPress={() => dispatch(increment())}
           >
-            {status}
+            {priority}
           </Text>
+
+          <TouchableOpacity
+            onPress={() =>
+              handleChangeStatus(
+                _id,
+                tabStatus,
+                !tabId ? "delete" : __statics._status[tabId - 1]
+              )
+            }
+          >
+            <Text>{!tabId ? "DELETE" : __statics.status[tabId - 1]}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              handleChangeStatus(_id, tabStatus, __statics._status[tabId + 1])
+            }
+          >
+            <Text>{__statics.status[tabId + 1]}</Text>
+          </TouchableOpacity>
+
           <Text style={{ fontSize: 13 }}>deadline: {deadLine}</Text>
         </View>
         <View style={styles.card_container_title}>

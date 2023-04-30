@@ -5,8 +5,8 @@ import { pokemonApi } from "./features/todo/TodoSlice";
 export default configureStore({
   reducer: {
     todo: TodoReducer,
-    [pokemonApi.reducerPath]: pokemonApi.reducer,
+    // [pokemonApi.reducerPath]: pokemonApi.reducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(pokemonApi.middleware),
+  // middleware: (getDefaultMiddleware) =>
+  //   getDefaultMiddleware().concat(pokemonApi.middleware),
 });

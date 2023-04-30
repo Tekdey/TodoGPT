@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Tasks from "./Tabs/Tasks";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { useGetPokemonByNameQuery } from "../../redux/features/todo/TodoSlice";
+import { useDispatch } from "react-redux";
+import { fetchAllTodos } from "../../redux/features/todo/TodoSlice";
 
 const Tab = createMaterialTopTabNavigator();
 
 const Todo = () => {
-  const { data, error, isLoading } = useGetPokemonByNameQuery("bulbasaur");
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchAllTodos());
+  }, []);
 
   return (
     <Tab.Navigator
@@ -17,17 +22,17 @@ const Todo = () => {
       <Tab.Screen
         name="Tâches"
         component={Tasks}
-        initialParams={{ tabStatus: "stable", data }}
+        initialParams={{ tabId: 0, tabStatus: "stable" }}
       />
       <Tab.Screen
         name="En cours"
         component={Tasks}
-        initialParams={{ tabStatus: "progress" }}
+        initialParams={{ tabId: 1, tabStatus: "progress" }}
       />
       <Tab.Screen
         name="Terminé"
         component={Tasks}
-        initialParams={{ tabStatus: "finished" }}
+        initialParams={{ tabId: 2, tabStatus: "finished" }}
       />
     </Tab.Navigator>
   );
